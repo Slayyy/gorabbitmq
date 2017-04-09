@@ -31,6 +31,8 @@ func main() {
 	common.PanicOnError(err, "Failed to open a channel")
 	defer ch.Close()
 
+	common.ListenForAdminInfo(ch)
+
 	err = ch.Qos(
 		1,     // prefetch count
 		0,     // prefetch size

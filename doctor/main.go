@@ -38,6 +38,7 @@ func main() {
 	ch, err := conn.Channel()
 	common.PanicOnError(err, "Failed to open a channel")
 	defer ch.Close()
+	common.ListenForAdminInfo(ch)
 
 	q, err := ch.QueueDeclare(
 		"",    // name

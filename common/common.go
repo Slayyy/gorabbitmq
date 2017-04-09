@@ -9,6 +9,7 @@ import (
 
 const (
 	DoctorExchangeName = "doctor_exchange"
+	AdminInfoExchange  = "admin_info_exchange"
 )
 
 func PanicOnError(err error, msg string) {
@@ -40,5 +41,57 @@ func DeclareDoctorExchange(ch *amqp.Channel) error {
 		false,              // no-wait
 		nil,                // arguments
 	)
+
+}
+
+func DeclareAdminInfoExchange(ch *amqp.Channel) error {
+	return ch.ExchangeDeclare(
+		AdminInfoExchange, // name
+		"fanout",          // type
+		true,              // durable
+		false,             // auto-deleted
+		false,             // internal
+		false,             // no-wait
+		nil,               // arguments
+	)
+
+}
+
+func ListenForAdminInfo(ch *amqp.Channel) {
+	err := DeclareAdminInfoExchange(ch)
+	PanicOnError(err, "Failed to declare a exchange")
+
+	q, err := ch.QueueDeclare(
+		"",    // name
+		true,  // durable
+		false, // delete when unused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
+	)
+	PanicOnError(err, "Failed to declare a queue")
+	err = ch.QueueBind(
+		q.Name,            // queue name
+		"",                // routing key
+		AdminInfoExchange, // exchange
+		false,
+		nil)
+	PanicOnError(err, "Failed to bind a queue")
+	msgs, err := ch.Consume(
+		q.Name, // queue
+		"",     // consumer
+		false,  // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+	PanicOnError(err, "Failed to register a consumer")
+	go func() {
+		for d := range msgs {
+			log.Printf("Admin info: %s", d.Body)
+			d.Ack(false)
+		}
+	}()
 
 }
