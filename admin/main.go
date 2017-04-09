@@ -30,6 +30,43 @@ func main() {
 	ch, err := conn.Channel()
 	common.PanicOnError(err, "Failed to open a channel")
 	defer ch.Close()
+	err = common.DeclareAdminReceiverExchange(ch)
+	common.PanicOnError(err, "Failed to declare a exchange")
+
+	const adminQueueName = "admin_queue"
+	q, err := ch.QueueDeclare(
+		adminQueueName, // name
+		true,           // durable
+		false,          // delete when unused
+		false,          // exclusive
+		false,          // no-wait
+		nil,            // arguments
+	)
+	common.PanicOnError(err, "Failed to declare a queue")
+
+	err = ch.QueueBind(
+		q.Name, // queue name
+		"",     // routing key
+		common.AdminReceiverExchange, // exchange
+		false,
+		nil)
+
+	common.PanicOnError(err, "Failed to bind a queue")
+	msgs, err := ch.Consume(
+		q.Name, // queue
+		"",     // consumer
+		true,   // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+	common.PanicOnError(err, "Failed to register a consumer")
+	go func() {
+		for d := range msgs {
+			log.Println(string(d.Body))
+		}
+	}()
 
 	log.Println("----------ADMIN----------")
 	reader := bufio.NewReader(os.Stdin)

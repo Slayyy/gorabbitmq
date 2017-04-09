@@ -98,6 +98,17 @@ func main() {
 				Body:        []byte(surname),
 			})
 		common.PanicOnError(err, "Failed to publish a message")
+
+		err = ch.Publish(
+			common.AdminReceiverExchange, // exchange
+			"",    // routing key
+			false, // mandatory
+			false, // immediate
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        []byte(surname),
+			})
+		common.PanicOnError(err, "Failed to publish a message")
 	}
 
 }

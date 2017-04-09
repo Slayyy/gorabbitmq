@@ -8,8 +8,9 @@ import (
 )
 
 const (
-	DoctorExchangeName = "doctor_exchange"
-	AdminInfoExchange  = "admin_info_exchange"
+	DoctorExchangeName    = "doctor_exchange"
+	AdminInfoExchange     = "admin_info_exchange"
+	AdminReceiverExchange = "admin_receiver_exchange"
 )
 
 func PanicOnError(err error, msg string) {
@@ -55,6 +56,18 @@ func DeclareAdminInfoExchange(ch *amqp.Channel) error {
 		nil,               // arguments
 	)
 
+}
+
+func DeclareAdminReceiverExchange(ch *amqp.Channel) error {
+	return ch.ExchangeDeclare(
+		AdminReceiverExchange, // name
+		"fanout",              // type
+		true,                  // durable
+		false,                 // auto-deleted
+		false,                 // internal
+		false,                 // no-wait
+		nil,                   // arguments
+	)
 }
 
 func ListenForAdminInfo(ch *amqp.Channel) {
