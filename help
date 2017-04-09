@@ -1,0 +1,8 @@
+build: ./build.sh
+
+run admin: ./a
+run doctor: ./d 
+run technician: ./t [list of examinations]
+eg. ./t knee elbow
+eg. ./t knee ankle
+eg. ./t knee ankle elbow something_else
